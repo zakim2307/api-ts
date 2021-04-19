@@ -5,23 +5,34 @@ import { pool } from './models/dbConfig'
 export const handler: APIGatewayProxyHandler = async (event, _context) => {
   const name = event.pathParameters?.item;
 
-  console.log(event.pathParameters,"The name is: "+ name)
-    
+  
   if(!name){
       return apiResponses._400({message: 'Cannot find name'})
-  }
-
+    }
+    
     const nm:string = name;
-
+    let newIn: { [key: string]:Inventory };
+    
     const sql:string = 'select * from "Inventory" where name=\''+nm+'\';' 
     pool.query(sql, (err, res) => {
-        console.log(sql,"\n",nm);
-        console.log(res.rows[0], sql); 
-        Inventory = res.rows[0].id; 
-        console.log(inventory[name]);
+        newIn = {
+            nm: {
+                id: res.rows[0].id,
+                createdBy: res.rows[0].createdBy,
+                createDateTime: new Date().toDateString(),
+                updatedBy: res.rows[0].createdBy,
+                updatedDateTime: new Date().toDateString(),
+                name: name,
+                description:
+                'best'+nm.toString(),
+            },
+        }
+        console.log(event.pathParameters,"The name is: "+ name)
+        console.log(sql);
+        console.log(newIn[nm]);
         pool.end() 
     })
-    return apiResponses._200(inventory[name]);
+    return apiResponses._200(newIn[nm.toString()]);
 };
     const apiResponses = {
         _200: (body: {[key:string]: any}) => {

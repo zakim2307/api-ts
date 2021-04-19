@@ -1,4 +1,5 @@
 import type { AWS } from '@serverless/typescript';
+import 'reflect-metadata';
 
 const serverlessConfiguration: AWS = {
   service: 'aws-typescript-api',
@@ -32,6 +33,18 @@ const serverlessConfiguration: AWS = {
         {
           http: {
             path: 'get-item/{item}',
+            method: 'get',
+            cors: true,
+          }
+        }
+      ]
+    },
+    getUserInfo: {
+      handler: 'typeOrms/getUserInfo.handler',
+      events: [
+        {
+          http: {
+            path: 'get-users/',
             method: 'get',
             cors: true,
           }
