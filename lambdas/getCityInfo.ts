@@ -1,6 +1,7 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import 'source-map-support/register';
-import { pool } from './models/dbConfig'
+import { pool } from './models/dbConfig';
+import { Inventory } from './interfaces/inventory';
 
 export const handler: APIGatewayProxyHandler = async (event, _context) => {
   const name = event.pathParameters?.item;
@@ -14,29 +15,22 @@ export const handler: APIGatewayProxyHandler = async (event, _context) => {
     let newIn: { [key: string]:Inventory };
     
     const sql:string = 'select * from "Inventory" where name=\''+nm+'\';' 
-    pool.query(sql, (err, res) => {
-        newIn = {
-            nm: {
-                id: res.rows[0].id,
-                createdBy: res.rows[0].createdBy,
-                createDateTime: new Date().toDateString(),
-                updatedBy: res.rows[0].createdBy,
-                updatedDateTime: new Date().toDateString(),
-                name: name,
-                description:
-                'best'+nm.toString(),
-            },
-        }
-        console.log(event.pathParameters,"The name is: "+ name)
-        console.log(sql);
-        console.log(newIn[nm]);
-        pool.end() 
-    })
-    return apiResponses._200(newIn[nm.toString()]);
+    const { rows } = await pool.query(sql);
+    console.log(rows);
+    const inventories:Inventory = {
+        id: rows[0].id,
+        name: rows[0].name,
+        description: rows[0].description,
+        createdBy: rows[0].createdBy,
+        createDateTime: rows[0].createDateTime,
+        updatedBy: rows[0].lastChangedBy, 
+        updatedDateTime: rows[0].lastChangedDateTime,
+    }
+
+    return apiResponses._200(inventories);
 };
     const apiResponses = {
-        _200: (body: {[key:string]: any}) => {
-            console.log(body)
+        _200: (body: any) => {
             return {
                 statusCode: 200,
                 body: JSON.stringify(body, null, 2)
@@ -50,28 +44,4 @@ export const handler: APIGatewayProxyHandler = async (event, _context) => {
             };
         }
     }
-
-
-interface Inventory {
-    id : string;
-    name: string;
-    description: string;
-    createdBy: string;
-    createDateTime: string;
-    updatedBy: string;
-    updatedDateTime: string;
-}
-
-const inventory: { [key: string]:Inventory } = {
-    cement: {
-        id: 'za',
-        createdBy: 'random',
-        createDateTime: 'random',
-        updatedBy: 'random',
-        updatedDateTime: 'random',
-        name: 'cement',
-        description:
-            'New York City comprises 5 boroughs sitting where the Hudson River meets the Atlantic Ocean. At its core is Manhattan, a densely populated borough that’s among the world’s major commercial, financial and cultural centers. Its iconic sites include skyscrapers such as the Empire State Building and sprawling Central Park. Broadway theater is staged in neon-lit Times Square.',
-    },
-}
 

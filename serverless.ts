@@ -39,6 +39,18 @@ const serverlessConfiguration: AWS = {
         }
       ]
     },
+    postCityInfo: {
+      handler: 'lambdas/postCityInfo.handler',
+      events: [
+        {
+          http: {
+            path: 'post-items/{data}',
+            method: 'post',
+            cors: true,
+          }
+        }
+      ]
+    },
     getUserInfo: {
       handler: 'typeOrms/getUserInfo.handler',
       events: [
